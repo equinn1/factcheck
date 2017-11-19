@@ -1,0 +1,111 @@
+\documentclass{article}
+
+\begin{document}
+
+\title{East Greenwich Tax Levy Growth Analysis}
+\maketitle
+
+<<>>=
+library(ggplot2)
+
+df = read.csv("EG_tax_levy.csv")
+str(df)
+
+levy = (df$Town+df$Fire.District)/1000000
+
+
+log_levy = log(levy)
+year = df$Year
+
+lm0 = lm(log_levy~year)
+summary(lm0)
+exp(lm0$coefficients[2])
+
+best_fit = exp(lm0$fitted.values)
+
+plot(levy~year,type='l')
+lines(best_fit~year)
+
+
+df3 <-data.frame(levy,best_fit,year)
+
+exp(lm0$coefficients[2])
+
+df2000_2016 = df[(df$Year < 2017) & (df$Year > 1999),]
+
+str(df2000_2016)
+
+levy = (df2000_2016$Town+df2000_2016$Fire.District)/1000000
+
+log_levy = log(levy)
+
+log_levy
+
+year = df2000_2016$Year 
+
+lm1 = lm(log_levy~year)
+summary(lm1)
+
+exp(lm1$coefficients[2])
+plot(levy~year,type='l')
+best_fit=exp(lm1$fitted.values)
+lines(best_fit~year)
+
+df2 <- data.frame(levy,best_fit,year)
+str(df2)
+@
+
+
+
+\begin{figure}[H]
+  <<EGlevy1, echo=FALSE, results='asis', fig.width=8, fig.height=4>>=
+levy = c(df2$levy,df2$best_fit)
+year = rep(df2$year,2)
+value = as.factor(c(rep('Total Levy (millions)',nrow(df2)),
+                    rep('Constant 4.29% Annual Growth (best fit)',nrow(df2))))
+
+df4 = data.frame(levy,year,value)
+#str(df4)
+
+myplot<-ggplot(df4, aes(x=year, y=levy, group=value, linetype =   value)) +
+ geom_line() + xlab("Tax Year") + ylab("Total Levy") + labs(
+   title='East Greenwich Tax Levy Growth 2000-2016:',
+   subtitle='Total levy and best-fitting constant annual growth (4.29%)'
+   ) 
+
+#+xlab('Tax Year') + ylab('Total Levy')) 
+ 
+myplot
+
+ggsave("EGlevy1.png", plot = myplot, device = "png")  #, path = NULL,
+#  scale = 1, width = NA, height = NA, units = c("in", "cm", "mm"),
+#  dpi = 300, limitsize = TRUE, ...)
+
+
+
+@
+\end{figure}
+
+\begin{figure}[H]
+  <<EGlevy2, echo=FALSE, results='asis', fig.width=8, fig.height=4>>=
+levy = c(df3$levy,df3$best_fit)
+year = rep(df3$year,2)
+value = as.factor(c(rep('Total Levy (millions)',nrow(df3)),rep('Constant 5.06% Annual Growth (best fit)',nrow(df3))))
+
+df5 = data.frame(levy,year,value)
+#str(df5)
+
+myplot2<-ggplot(df5, aes(x=year, y=levy, group=value, linetype =   value)) +
+ geom_line() + xlab("Tax Year") + ylab("Total Levy") + labs(
+   title='East Greenwich Tax Levy Growth 1987-2016:',
+   subtitle='Total levy and best-fitting constant annual growth (5.06%)'
+   ) 
+ 
+myplot2
+
+ggsave("EGlevy2.png", plot = myplot2, device = "png")  #, path = NULL,
+
+@
+
+\end{figure}
+\end{document}
